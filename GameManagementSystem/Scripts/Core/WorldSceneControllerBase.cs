@@ -95,8 +95,5 @@ namespace Canty.GameManagementSystem
             InitializeSceneDictionary();
             StartCoroutine(SceneTransitionCoroutine());
         }
-
-        [Serializable] public class TestDictionary : SerializableDictionary<int, float> { }
-        [Serializable] public class ScenesDictionary : SerializableDictionary<ScenesType, SceneReference> { }
     }
 }
