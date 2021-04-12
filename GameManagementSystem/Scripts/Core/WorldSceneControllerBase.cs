@@ -16,6 +16,8 @@ namespace Canty.GameManagementSystem
     public abstract class WorldSceneControllerBase<ScenesType> : WorldEventListenerBase
         where ScenesType : Enum
     {
+        [SerializeField] private bool _showDebugLogs = false;
+
         protected Dictionary<ScenesType, SceneReference> _internalSceneDictionary = new Dictionary<ScenesType, SceneReference>();
 
         private Queue<(ScenesType Type, LoadSceneMode Mode)> _sceneQueue = new Queue<(ScenesType Type, LoadSceneMode Mode)>();
@@ -45,6 +47,14 @@ namespace Canty.GameManagementSystem
 
                     AsyncOperation asyncOperation = SceneManager.UnloadSceneAsync(_internalSceneDictionary[_currentScene.Type].ScenePath);
                     yield return new WaitUntil(() => asyncOperation.isDone);
+
+                    if (_showDebugLogs)
+                        Debug.Log($"[WorldSceneController] : Old loaded scene unloaded successfully.");
+                }
+                else
+                {
+                    if (_showDebugLogs)
+                        Debug.Log($"[WorldSceneController] : No scene was loaded, thus, no unloading was done.");
                 }
 
                 _currentScene = _sceneQueue.Dequeue();
@@ -53,7 +63,10 @@ namespace Canty.GameManagementSystem
                 {
                     AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(_internalSceneDictionary[_currentScene.Type].ScenePath, _currentScene.Mode);
                     yield return new WaitUntil(() => asyncOperation.isDone);
-                    
+
+                    if (_showDebugLogs)
+                        Debug.Log($"[WorldSceneController] : Newly requested scene loaded successfully.");
+
                     for (int i = 0; i < SceneManager.sceneCount; ++i)
                     {
                         Scene scene = SceneManager.GetSceneAt(i);
@@ -70,16 +83,27 @@ namespace Canty.GameManagementSystem
                     {
                         _currentSceneController.OnEnter();
 
+                        if (_showDebugLogs)
+                            Debug.Log($"[WorldSceneController] : GameSceneController found in newly loaded scene.");
+
                         _sceneChangedEvent.Reset(_currentScene.Type, _currentSceneController);
                         m_Dispatcher.SendEvent(_sceneChangedEvent);
                     }
                     else
                     {
+                        if (_showDebugLogs)
+                            Debug.Log($"[WorldSceneController] : GameSceneController not found in newly loaded scene. Now unloading.");
+
                         asyncOperation = SceneManager.UnloadSceneAsync(_internalSceneDictionary[_currentScene.Type].ScenePath);
                         yield return new WaitUntil(() => asyncOperation.isDone);
 
                         _currentScene = (default(ScenesType), LoadSceneMode.Additive);
                     }
+                }
+                else
+                {
+                    if (_showDebugLogs)
+                        Debug.Log($"[WorldSceneController] : Newly requested scene is null. No loading done.");
                 }
             }
         }
