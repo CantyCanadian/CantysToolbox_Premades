@@ -39,7 +39,7 @@ namespace Canty.GameManagementSystem
             {
                 yield return new WaitUntil(() => _sceneQueue.Count > 0);
 
-                m_Dispatcher.SendEvent(_sceneTransitionEvent);
+                _dispatcher.SendEvent(_sceneTransitionEvent);
                 if (!EqualityComparer<ScenesType>.Default.Equals(_currentScene.Type, default(ScenesType)))
                 {
                     _currentSceneController.OnExit();
@@ -87,7 +87,7 @@ namespace Canty.GameManagementSystem
                             Debug.Log($"[WorldSceneController] : GameSceneController found in newly loaded scene.");
 
                         _sceneChangedEvent.Reset(_currentScene.Type, _currentSceneController);
-                        m_Dispatcher.SendEvent(_sceneChangedEvent);
+                        _dispatcher.SendEvent(_sceneChangedEvent);
                     }
                     else
                     {

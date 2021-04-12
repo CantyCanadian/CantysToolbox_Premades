@@ -18,7 +18,7 @@ namespace Canty.GameManagementSystem
             base.Awake();
 
             m_ChangeSceneEvent.Reset(m_DefaultScene, UnityEngine.SceneManagement.LoadSceneMode.Additive);
-            m_Dispatcher.SendEvent(m_ChangeSceneEvent);
+            _dispatcher.SendEvent(m_ChangeSceneEvent);
         }
     }
 }
