@@ -16,7 +16,5 @@ namespace Canty.GameManagementSystem
 
         public WorldSceneTransitionEvent(string origin)
             : base(origin) { }
-
-        public WorldSceneTransitionEvent() { }
     }
 }

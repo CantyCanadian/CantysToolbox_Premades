@@ -35,7 +35,5 @@ namespace Canty.GameManagementSystem
 
         public WorldSceneChangedEvent(string origin)
             : base(origin) { }
-
-        public WorldSceneChangedEvent() { }
     }
 }

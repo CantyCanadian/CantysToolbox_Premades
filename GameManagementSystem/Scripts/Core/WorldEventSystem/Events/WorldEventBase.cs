@@ -6,7 +6,5 @@ namespace Canty.GameManagementSystem
     {
         public WorldEventBase(string origin) 
             : base(origin) { }
-
-        public WorldEventBase() { }
     }
 }
