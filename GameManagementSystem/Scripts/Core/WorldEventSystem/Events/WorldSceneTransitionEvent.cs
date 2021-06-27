@@ -7,7 +7,7 @@ namespace Canty.GameManagementSystem
 {
     public class WorldSceneTransitionEvent : WorldEventBase
     {
-        public override void Copy(EventBase other) { }
+        public override void Copy(EventBase eventObject) { }
 
         public override string GetDebugData()
         {

@@ -17,14 +17,12 @@ namespace Canty.GameManagementSystem
             GameSceneController = gameSceneController;
         }
 
-        public override void Copy(EventBase other)
+        public override void Copy(EventBase eventObject)
         {
-            if (other is WorldSceneChangedEvent<ScenesType>)
+            if (eventObject is WorldSceneChangedEvent<ScenesType> sceneChangeEvent)
             {
-                WorldSceneChangedEvent<ScenesType> otherEvent = other as WorldSceneChangedEvent<ScenesType>;
-
-                Scene = otherEvent.Scene;
-                GameSceneController = otherEvent.GameSceneController;
+                Scene = sceneChangeEvent.Scene;
+                GameSceneController = sceneChangeEvent.GameSceneController;
             }
         }
 

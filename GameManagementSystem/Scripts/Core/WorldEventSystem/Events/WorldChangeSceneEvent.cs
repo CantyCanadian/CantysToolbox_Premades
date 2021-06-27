@@ -17,14 +17,12 @@ namespace Canty.GameManagementSystem
             Mode = mode;
         }
 
-        public override void Copy(EventBase other)
+        public override void Copy(EventBase eventObject)
         {
-            if (other is WorldChangeSceneEvent<ScenesType>)
+            if (eventObject is WorldChangeSceneEvent<ScenesType> changeSceneEvent)
             {
-                WorldChangeSceneEvent<ScenesType> otherEvent = other as WorldChangeSceneEvent<ScenesType>;
-
-                Scene = otherEvent.Scene;
-                Mode = otherEvent.Mode;
+                Scene = changeSceneEvent.Scene;
+                Mode = changeSceneEvent.Mode;
             }
         }
 
