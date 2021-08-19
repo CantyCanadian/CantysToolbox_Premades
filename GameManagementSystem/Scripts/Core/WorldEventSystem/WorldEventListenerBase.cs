@@ -2,5 +2,5 @@
 
 namespace Canty.GameManagementSystem
 {
-    public class WorldEventListenerBase : GlobalEventListenerBase<WorldEventBase> { }
+    public abstract class WorldEventListenerBase : GlobalEventListenerBase<WorldEventBase> { }
 }

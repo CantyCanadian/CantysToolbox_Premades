@@ -1,7 +1,5 @@
 ﻿using Canty.EventSystem;
 using System;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace Canty.GameManagementSystem
 {

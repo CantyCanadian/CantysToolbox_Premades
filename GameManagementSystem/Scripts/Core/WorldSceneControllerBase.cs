@@ -10,25 +10,28 @@ namespace Canty.GameManagementSystem
 {
     /// <summary>
     /// Base class for your scene controller. Must be implemented in order to specify which enum to use as the Scenes enum.
-    /// Please note that enum value 0 should represent a Null or equivalent, as it is used in the code as the "no scene" ID.
+    /// The enum is implemented as a nullable so that you can set it to null to specify when no scene is loaded.
     /// </summary>
     /// <typeparam name="ScenesType"></typeparam>
     public abstract class WorldSceneControllerBase<ScenesType> : WorldEventListenerBase
-        where ScenesType : Enum
+        where ScenesType : struct, Enum
     {
+        [SerializeField] protected float _sceneTransitionDelay = 0.25f;
+
         [SerializeField] private bool _showDebugLogs = false;
+        [SerializeField, ConditionalField("_showDebugLogs")] private Color _debugLogColor = Color.black;
 
-        protected Dictionary<ScenesType, SceneReference> _internalSceneDictionary = new Dictionary<ScenesType, SceneReference>();
+        protected Dictionary<ScenesType?, SceneReference> _internalSceneDictionary = new Dictionary<ScenesType?, SceneReference>();
 
-        private Queue<(ScenesType Type, LoadSceneMode Mode)> _sceneQueue = new Queue<(ScenesType Type, LoadSceneMode Mode)>();
-        private (ScenesType Type, LoadSceneMode Mode) _currentScene = (default(ScenesType), LoadSceneMode.Additive);
+        private Queue<(ScenesType? Type, LoadSceneMode Mode)> _sceneQueue = new Queue<(ScenesType? Type, LoadSceneMode Mode)>();
+        private (ScenesType? Type, LoadSceneMode Mode) _currentScene = (null, LoadSceneMode.Additive);
         private IGameSceneController _currentSceneController = null;
 
         private WorldSceneTransitionEvent _sceneTransitionEvent = new WorldSceneTransitionEvent("WorldSceneController");
         private WorldSceneChangedEvent<ScenesType> _sceneChangedEvent = new WorldSceneChangedEvent<ScenesType>("WorldSceneController");
 
         [EventReceiver]
-        public void OnChangeSceneEvent(WorldChangeSceneEvent<ScenesType> eventObject)
+        protected void OnChangeSceneEvent(WorldChangeSceneEvent<ScenesType> eventObject)
         {
             _sceneQueue.Enqueue((eventObject.Scene, eventObject.Mode));
         }
@@ -40,7 +43,10 @@ namespace Canty.GameManagementSystem
                 yield return new WaitUntil(() => _sceneQueue.Count > 0);
 
                 _dispatcher.SendEvent(_sceneTransitionEvent);
-                if (!EqualityComparer<ScenesType>.Default.Equals(_currentScene.Type, default(ScenesType)))
+                OnSceneTransitionStarted();
+                yield return new WaitForSeconds(_sceneTransitionDelay);
+
+                if (_currentScene.Type != null)
                 {
                     _currentSceneController.OnExit();
                     _currentSceneController = null;
@@ -49,23 +55,23 @@ namespace Canty.GameManagementSystem
                     yield return new WaitUntil(() => asyncOperation.isDone);
 
                     if (_showDebugLogs)
-                        Debug.Log($"[WorldSceneController] : Old loaded scene unloaded successfully.");
+                        Debug.Log(string.Format("<color=#{0:X2}{1:X2}{2:X2}ff>[WorldSceneController]</color>\nOld loaded scene unloaded successfully.", (int)(_debugLogColor.r * 255), (int)(_debugLogColor.g * 255), (int)(_debugLogColor.b * 255)));
                 }
                 else
                 {
                     if (_showDebugLogs)
-                        Debug.Log($"[WorldSceneController] : No scene was loaded, thus, no unloading was done.");
+                        Debug.Log(string.Format("<color=#{0:X2}{1:X2}{2:X2}ff>[WorldSceneController]</color>\nNo scene was loaded, thus, no unloading was done.", (int)(_debugLogColor.r * 255), (int)(_debugLogColor.g * 255), (int)(_debugLogColor.b * 255)));
                 }
 
                 _currentScene = _sceneQueue.Dequeue();
 
-                if (!EqualityComparer<ScenesType>.Default.Equals(_currentScene.Type, default(ScenesType)))
+                if (_currentScene.Type != null)
                 {
                     AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(_internalSceneDictionary[_currentScene.Type].ScenePath, _currentScene.Mode);
                     yield return new WaitUntil(() => asyncOperation.isDone);
 
                     if (_showDebugLogs)
-                        Debug.Log($"[WorldSceneController] : Newly requested scene loaded successfully.");
+                        Debug.Log(string.Format("<color=#{0:X2}{1:X2}{2:X2}ff>[WorldSceneController]</color>\nNewly requested scene loaded successfully.", (int)(_debugLogColor.r * 255), (int)(_debugLogColor.g * 255), (int)(_debugLogColor.b * 255)));
 
                     for (int i = 0; i < SceneManager.sceneCount; ++i)
                     {
@@ -84,15 +90,17 @@ namespace Canty.GameManagementSystem
                         _currentSceneController.OnEnter();
 
                         if (_showDebugLogs)
-                            Debug.Log($"[WorldSceneController] : GameSceneController found in newly loaded scene.");
+                            Debug.Log(string.Format("<color=#{0:X2}{1:X2}{2:X2}ff>[WorldSceneController]</color>\nGameSceneController found in newly loaded scene.", (int)(_debugLogColor.r * 255), (int)(_debugLogColor.g * 255), (int)(_debugLogColor.b * 255)));
 
-                        _sceneChangedEvent.Reset(_currentScene.Type, _currentSceneController);
+                        _sceneChangedEvent.Reset(_currentScene.Type.Value, _currentSceneController);
                         _dispatcher.SendEvent(_sceneChangedEvent);
+
+                        OnSceneTransitionEnded();
                     }
                     else
                     {
                         if (_showDebugLogs)
-                            Debug.Log($"[WorldSceneController] : GameSceneController not found in newly loaded scene. Now unloading.");
+                            Debug.Log(string.Format("<color=#{0:X2}{1:X2}{2:X2}ff>[WorldSceneController]</color>\nGameSceneController not found in newly loaded scene. Now unloading.", (int)(_debugLogColor.r * 255), (int)(_debugLogColor.g * 255), (int)(_debugLogColor.b * 255)));
 
                         asyncOperation = SceneManager.UnloadSceneAsync(_internalSceneDictionary[_currentScene.Type].ScenePath);
                         yield return new WaitUntil(() => asyncOperation.isDone);
@@ -103,10 +111,13 @@ namespace Canty.GameManagementSystem
                 else
                 {
                     if (_showDebugLogs)
-                        Debug.Log($"[WorldSceneController] : Newly requested scene is null. No loading done.");
+                        Debug.Log(string.Format("<color=#{0:X2}{1:X2}{2:X2}ff>[WorldSceneController]</color>\nNewly requested scene is null. No loading done.", (int)(_debugLogColor.r * 255), (int)(_debugLogColor.g * 255), (int)(_debugLogColor.b * 255)));
                 }
             }
         }
+
+        protected virtual void OnSceneTransitionStarted() { }
+        protected virtual void OnSceneTransitionEnded() { }
 
         // A dirty solution to a problem. Simply put, I cannot find how to display a 2 value list in the inspector, whether as a dictionary, tuple or subclass.
         // It would normally be easy, but in the case where one of the value is a generic enum, any attempt has failed. Thus, each implementation should handle populating the dictionary by itself.
