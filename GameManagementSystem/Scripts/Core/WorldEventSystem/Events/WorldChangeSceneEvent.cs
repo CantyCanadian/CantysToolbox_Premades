@@ -11,7 +11,7 @@ namespace Canty.GameManagementSystem
         public ScenesType Scene { get; private set; } = default;
         public LoadSceneMode Mode { get; private set; } = LoadSceneMode.Additive;
 
-        public void Reset(ScenesType scene, LoadSceneMode mode)
+        public void Reset(ScenesType scene, LoadSceneMode mode = LoadSceneMode.Additive)
         {
             Scene = scene;
             Mode = mode;
